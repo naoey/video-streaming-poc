@@ -91,7 +91,7 @@ namespace video_streaming_poc.Controllers
 
             logger.Log(LogLevel.Information, "Began video building task");
             
-            return PhysicalFile(path, "application/octet-stream");
+            return PhysicalFile(path, "application/vnd.apple.mpegurl");
         }
 
         [HttpGet]
