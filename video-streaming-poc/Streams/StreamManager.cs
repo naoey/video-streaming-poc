@@ -19,7 +19,7 @@ namespace video_streaming_poc.Streams
             
             Streams.Add(stream = new StreamBuilder(source));
 
-            return stream.Manifest;
+            return stream.StreamInfo;
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace video_streaming_poc.Streams
         /// <returns>Returns true if the stream was successfully terminated, false if it was not found.</returns>
         public bool CloseStream(StreamInfo streamInfo)
         {
-            var stream = Streams.Find(s => streamInfo.Equals(s.Manifest));
+            var stream = Streams.Find(s => streamInfo.Equals(s.StreamInfo));
 
             if (stream == null)
                 return false;
@@ -39,6 +39,11 @@ namespace video_streaming_poc.Streams
             Streams.Remove(stream);
 
             return true;
+        }
+
+        public bool CloseStream(string id)
+        {
+            return CloseStream(Streams.Find(s => s.StreamInfo.Id == id)?.StreamInfo);
         }
         
         public void Dispose()

@@ -26,7 +26,7 @@ namespace video_streaming_poc.Controllers
         }
 
         [HttpPost]
-        [Route("/stream")]
+        [Route("/old/stream")]
         public PhysicalFileResult CreateVideo()
         {
             logger.Log(LogLevel.Information, "Beginning video creation...");
@@ -95,7 +95,7 @@ namespace video_streaming_poc.Controllers
         }
 
         [HttpGet]
-        [Route("/stream")]
+        [Route("/old/stream")]
         public PhysicalFileResult LoadVideo()
         {
             string videoFile = Path.Join(out_dir, file_name);
@@ -104,7 +104,7 @@ namespace video_streaming_poc.Controllers
         }
 
         [HttpGet]
-        [Route("/poll")]
+        [Route("/old/poll")]
         public PollResult Poll()
         {
             string file = Path.Join(out_dir, file_name);

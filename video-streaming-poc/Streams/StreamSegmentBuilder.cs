@@ -43,16 +43,16 @@ namespace video_streaming_poc.Streams
  -f segment
  -segment_time {StreamBuilder.SEGMENT_DURATION}
  -segment_format mpegts
- -segment_list {Path.Join(StreamInfo.FileSystemPath, StreamBuilder.MANIFEST_FILE_NAME)}
+ -segment_list {StreamInfo.FileSystemOutputManifestPath}
  -segment_list_type m3u8
  -hls_flags append_list+omit_endlist 
- {Path.Join(StreamInfo.FileSystemPath, segmentNamePattern)}";
+ {Path.Join(StreamInfo.FileSystemOutputPath, segmentNamePattern)}";
             
             var pInfo = new ProcessStartInfo("ffmpg", ffmpegArgs)
             {
                 UseShellExecute = false,
                 RedirectStandardInput = true,
-                WorkingDirectory = StreamInfo.FileSystemPath,
+                WorkingDirectory = StreamInfo.FileSystemOutputPath,
             };
 
             var proc = Process.Start(pInfo);

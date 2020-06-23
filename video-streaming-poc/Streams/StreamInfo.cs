@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace video_streaming_poc.Streams
@@ -6,19 +7,32 @@ namespace video_streaming_poc.Streams
     public class StreamInfo : IEquatable<StreamInfo>
     {
         [JsonProperty("id")]
-        public string Id { get; protected set; }
+        public string Id { get; set; }
         
         [JsonProperty("name")]
-        public string Name { get; protected set; }
+        public string Name { get; set; }
         
         [JsonProperty("fps")]
-        public int Fps { get; protected set; }
+        public int Fps { get; set; }
             
         [JsonProperty("isAlive")]
-        public bool IsAlive { get; protected set; }
+        public bool IsAlive { get; set; }
+        
+        [JsonRequired]
+        [JsonProperty("fileSystemInputPath")]
+        public string FileSystemInputPath { get; set; }
+
+        [JsonIgnore]
+        public string FileSystemInputManifestPath =>
+            Path.Join(FileSystemInputPath, "manifest");
         
         [JsonIgnore]
-        public string FileSystemPath { get; set; }
+        public string FileSystemOutputPath { get; set; }
+
+        
+        [JsonIgnore]
+        public string FileSystemOutputManifestPath =>
+            Path.Join(FileSystemOutputPath, StreamBuilder.MANIFEST_FILE_NAME);
 
         public bool Equals(StreamInfo other)
         {

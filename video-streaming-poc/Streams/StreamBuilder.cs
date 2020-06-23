@@ -19,7 +19,7 @@ namespace video_streaming_poc.Streams
 
         public string Id
         {
-            get => Manifest?.Id;
+            get => manifest?.Id;
         }
 
         private bool isAlive;
@@ -38,12 +38,12 @@ namespace video_streaming_poc.Streams
 
         public string Name
         {
-            get => Manifest?.Name;
+            get => manifest?.Name;
         }
 
-        private readonly string sourcePath;
+        private readonly StreamSourceManifest manifest;
 
-        public readonly StreamSourceManifest Manifest;
+        public StreamInfo StreamInfo => manifest;
 
         private Timer manifestRefreshTimer;
 
@@ -53,18 +53,16 @@ namespace video_streaming_poc.Streams
 
         public StreamBuilder(string sourcePath)
         {
-            this.sourcePath = sourcePath;
+            manifest = new StreamSourceManifest(sourcePath);
 
-            Manifest = new StreamSourceManifest(Path.Join(sourcePath, "manifest.txt"));
-
-            string streamPath = Path.Join(STREAMS_DIR, Manifest.Id);
+            string streamPath = Path.Join(STREAMS_DIR, manifest.Id);
 
             if (!File.Exists(streamPath) || !File.GetAttributes(streamPath).HasFlag(FileAttributes.Directory))
                 Directory.CreateDirectory(streamPath);
 
-            Manifest.FileSystemPath = streamPath;
+            manifest.FileSystemOutputPath = streamPath;
 
-            if (!Manifest.IsAlive)
+            if (!manifest.IsAlive)
                 throw new InvalidOperationException(
                     $"Attempted to initialise {nameof(StreamBuilder)} on a closed stream source.");
 
@@ -85,61 +83,67 @@ namespace video_streaming_poc.Streams
 
         private void onFilesChanged(object _, FileSystemEventArgs __)
         {
-            List<FileInfo> newestFileBatch = new DirectoryInfo(sourcePath)
-                .GetFiles()
-                .Where(f => int.Parse(Path.GetFileNameWithoutExtension(f.Name)) > lastFrameIndex)
-                .ToList();
-
-            if (newestFileBatch.Count >= Manifest.Fps * SEGMENT_DURATION)
+            try
             {
-                new StreamSegmentBuilder(Manifest, newestFileBatch).Build();
+                List<FileInfo> newestFileBatch = new DirectoryInfo(manifest.FileSystemInputPath)
+                    .GetFiles("*.png")
+                    .Where(f => f.Name != "manifest" &&
+                                int.Parse(Path.GetFileNameWithoutExtension(f.Name)) > lastFrameIndex)
+                    .ToList();
+
+                if (newestFileBatch.Count >= manifest.Fps * SEGMENT_DURATION)
+                {
+                    new StreamSegmentBuilder(manifest, newestFileBatch).Build();
+                    lastFrameIndex = int.Parse(Path.GetFileNameWithoutExtension(newestFileBatch.Last().Name));
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 
         private void refreshManifest(object _)
         {
-            Manifest.Read();
+            manifest.Read();
 
-            IsAlive = Manifest.IsAlive;
+            IsAlive = manifest.IsAlive;
         }
 
         public void Dispose()
         {
             manifestRefreshTimer?.Dispose();
             framesWatcher?.Dispose();
+
+            if (File.Exists(StreamInfo.FileSystemOutputManifestPath))
+            {
+                var writer = File.AppendText(StreamInfo.FileSystemOutputManifestPath);
+                writer.WriteLine("#EXT-X-ENDLIST");
+            }
         }
 
         public class StreamSourceManifest : StreamInfo
         {
-            private readonly string manifestPath;
-
-            public StreamSourceManifest(string manifestPath)
+            public StreamSourceManifest(string sourcePath)
             {
-                this.manifestPath = manifestPath;
-
                 Id = Guid.NewGuid().ToString();
+                FileSystemInputPath = sourcePath;
 
                 Read();
             }
 
             public void Read()
             {
-                try
+                StreamReader reader = new StreamReader(FileSystemInputManifestPath);
+
+                string line;
+
+                while ((line = reader.ReadLine()) != null)
                 {
-                    StreamReader reader = new StreamReader(manifestPath);
+                    string[] parts = line.Split("=").Select(p => p.Trim()).ToArray();
 
-                    string line;
-
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        string[] parts = line.Split("=").Select(p => p.Trim()).ToArray();
-
-                        parseLine(parts[0], parts[1]);
-                    }
-                }
-                catch (FileNotFoundException e)
-                {
-                    Console.WriteLine($"Manifest file {manifestPath} not found.");
+                    parseLine(parts[0], parts[1]);
                 }
             }
 
