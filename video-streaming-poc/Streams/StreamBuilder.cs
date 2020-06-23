@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace video_streaming_poc.Streams
 {
-    internal class StreamBuilder : IDisposable
+    public class StreamBuilder : IDisposable
     {
         /// <summary>
         /// The duration in seconds of each stream segment.
@@ -19,7 +19,7 @@ namespace video_streaming_poc.Streams
 
         public string Id
         {
-            get => manifest?.Id;
+            get => Manifest?.Id;
         }
 
         private bool isAlive;
@@ -38,12 +38,12 @@ namespace video_streaming_poc.Streams
 
         public string Name
         {
-            get => manifest?.Name;
+            get => Manifest?.Name;
         }
 
         private readonly string sourcePath;
 
-        private readonly StreamSourceManifest manifest;
+        public readonly StreamSourceManifest Manifest;
 
         private Timer manifestRefreshTimer;
 
@@ -55,16 +55,16 @@ namespace video_streaming_poc.Streams
         {
             this.sourcePath = sourcePath;
 
-            manifest = new StreamSourceManifest(Path.Join(sourcePath, "manifest.txt"));
+            Manifest = new StreamSourceManifest(Path.Join(sourcePath, "manifest.txt"));
 
-            string streamPath = Path.Join(STREAMS_DIR, manifest.Id);
+            string streamPath = Path.Join(STREAMS_DIR, Manifest.Id);
 
             if (!File.Exists(streamPath) || !File.GetAttributes(streamPath).HasFlag(FileAttributes.Directory))
                 Directory.CreateDirectory(streamPath);
 
-            manifest.FileSystemPath = streamPath;
+            Manifest.FileSystemPath = streamPath;
 
-            if (!manifest.IsAlive)
+            if (!Manifest.IsAlive)
                 throw new InvalidOperationException(
                     $"Attempted to initialise {nameof(StreamBuilder)} on a closed stream source.");
 
@@ -90,17 +90,17 @@ namespace video_streaming_poc.Streams
                 .Where(f => int.Parse(Path.GetFileNameWithoutExtension(f.Name)) > lastFrameIndex)
                 .ToList();
 
-            if (newestFileBatch.Count >= manifest.Fps * SEGMENT_DURATION)
+            if (newestFileBatch.Count >= Manifest.Fps * SEGMENT_DURATION)
             {
-                new StreamSegmentBuilder(manifest, newestFileBatch).Build();
+                new StreamSegmentBuilder(Manifest, newestFileBatch).Build();
             }
         }
 
         private void refreshManifest(object _)
         {
-            manifest.Read();
+            Manifest.Read();
 
-            IsAlive = manifest.IsAlive;
+            IsAlive = Manifest.IsAlive;
         }
 
         public void Dispose()
@@ -109,7 +109,7 @@ namespace video_streaming_poc.Streams
             framesWatcher?.Dispose();
         }
 
-        private class StreamSourceManifest : StreamInfo
+        public class StreamSourceManifest : StreamInfo
         {
             private readonly string manifestPath;
 
