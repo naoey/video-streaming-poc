@@ -1,5 +1,5 @@
 {
-  "name": "video_streaming_poc",
+  "name": "video_streaming_service",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

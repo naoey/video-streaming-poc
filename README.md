@@ -1,4 +1,4 @@
-# Video stream builder PoC
+# Video stream builder
 
 An app built to accept a series of images and build it into a live video stream that is also retained as a video on demand
 resource on disk. This repository contains code to demonstrate building video streams on-the-fly from input images and playing

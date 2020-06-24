@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using video_streaming_poc.Streams;
+using video_streaming_service.Streams;
 
-namespace video_streaming_poc
+namespace video_streaming_service
 {
     public class Startup
     {

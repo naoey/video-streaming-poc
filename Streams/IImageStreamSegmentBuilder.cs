@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-namespace video_streaming_poc.Streams
+namespace video_streaming_service.Streams
 {
     public interface IImageStreamSegmentBuilder
     {

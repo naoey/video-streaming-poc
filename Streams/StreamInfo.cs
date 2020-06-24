@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace video_streaming_poc.Streams
+namespace video_streaming_service.Streams
 {
     public class StreamInfo : IEquatable<StreamInfo>
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace video_streaming_poc
+namespace video_streaming_service
 {
     public class WeatherForecast
     {

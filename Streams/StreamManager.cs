@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace video_streaming_poc.Streams
+namespace video_streaming_service.Streams
 {
     public class StreamManager : IDisposable
     {

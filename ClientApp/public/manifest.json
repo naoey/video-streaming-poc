@@ -1,6 +1,6 @@
 {
-  "short_name": "video_streaming_poc",
-  "name": "video_streaming_poc",
+  "short_name": "video_streaming_service",
+  "name": "video_streaming_service",
   "icons": [
     {
       "src": "favicon.ico",

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace video_streaming_poc.Controllers
+namespace video_streaming_service.Controllers
 {
     [ApiController]
     [Route("[controller]")]

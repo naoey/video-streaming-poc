@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using video_streaming_poc.Streams;
+using video_streaming_service.Streams;
 
-namespace video_streaming_poc.Controllers
+namespace video_streaming_service.Controllers
 {
     public class StreamsController : Controller
     {

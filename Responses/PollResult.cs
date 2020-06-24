@@ -1,4 +1,4 @@
-namespace video_streaming_poc.Responses
+namespace video_streaming_service.Responses
 {
     public class PollResult
     {

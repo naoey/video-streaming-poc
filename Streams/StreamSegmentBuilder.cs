@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace video_streaming_poc.Streams
+namespace video_streaming_service.Streams
 {
     public class StreamSegmentBuilder : IImageStreamSegmentBuilder
     {

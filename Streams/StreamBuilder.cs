@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace video_streaming_poc.Streams
+namespace video_streaming_service.Streams
 {
     public class StreamBuilder : IDisposable
     {
