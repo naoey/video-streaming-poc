@@ -29,6 +29,8 @@ namespace video_streaming_poc.Streams
         [JsonIgnore]
         public string FileSystemOutputPath { get; set; }
 
+        public string PublicUri => $"{StreamManager.STREAM_HOST}/{Id}/{StreamBuilder.MANIFEST_FILE_NAME}";
+
         
         [JsonIgnore]
         public string FileSystemOutputManifestPath =>

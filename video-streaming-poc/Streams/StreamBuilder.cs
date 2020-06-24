@@ -81,14 +81,22 @@ namespace video_streaming_poc.Streams
             IsAlive = true;
         }
 
+        private bool isProcessingBatch = false;
+
         private void onFilesChanged(object _, FileSystemEventArgs __)
         {
+            if (isProcessingBatch)
+                return;
+
+            isProcessingBatch = true;
+            
             try
             {
                 List<FileInfo> newestFileBatch = new DirectoryInfo(manifest.FileSystemInputPath)
                     .GetFiles("*.png")
                     .Where(f => f.Name != "manifest" &&
                                 int.Parse(Path.GetFileNameWithoutExtension(f.Name)) > lastFrameIndex)
+                    .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f.Name)))
                     .ToList();
 
                 if (newestFileBatch.Count >= manifest.Fps * SEGMENT_DURATION)
@@ -102,6 +110,8 @@ namespace video_streaming_poc.Streams
             {
                 Console.WriteLine(e);
             }
+
+            isProcessingBatch = false;
         }
 
         private void refreshManifest(object _)

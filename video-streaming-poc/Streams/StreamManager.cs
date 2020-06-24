@@ -5,6 +5,8 @@ namespace video_streaming_poc.Streams
 {
     public class StreamManager : IDisposable
     {
+        public const string STREAM_HOST = "http://localhost:13000";
+        
         public readonly List<StreamBuilder> Streams = new List<StreamBuilder>();
 
         /// <summary>
