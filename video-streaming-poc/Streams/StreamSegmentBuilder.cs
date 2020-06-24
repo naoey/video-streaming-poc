@@ -36,17 +36,12 @@ namespace video_streaming_poc.Streams
                 $"-g 48 " +
                 $"-keyint_min 48 " +
                 $"-hls_time 4 " +
-                $"-hls_flags append_list+omit_endlist " +
+                $"-hls_list_size 0 " +
+                $"-hls_flags append_list+omit_endlist+round_durations " +
                 $"-b:v 240k " +
                 $"-maxrate 240k " +
                 $"-bufsize 480k " +
-                $"-map 0 " +
-                $"-f segment " +
-                $"-segment_time {StreamBuilder.SEGMENT_DURATION} " +
-                $"-segment_format mpegts " +
-                $"-segment_list {StreamInfo.FileSystemOutputManifestPath} " +
-                $"-segment_list_type m3u8 " +
-                $"{Path.Join(StreamInfo.FileSystemOutputPath, segmentNamePattern)}";
+                $"{StreamInfo.FileSystemOutputManifestPath}";
 
             Console.WriteLine($"Starting ffmpeg process with working directory {StreamInfo.FileSystemOutputPath}");
 
