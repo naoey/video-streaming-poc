@@ -8,16 +8,16 @@ namespace video_streaming_service.Streams
     {
         [JsonProperty("id")]
         public string Id { get; set; }
-        
+
         [JsonProperty("name")]
         public string Name { get; set; }
-        
+
         [JsonProperty("fps")]
         public int Fps { get; set; }
-            
+
         [JsonProperty("isAlive")]
         public bool IsAlive { get; set; }
-        
+
         [JsonRequired]
         [JsonProperty("fileSystemInputPath")]
         public string FileSystemInputPath { get; set; }
@@ -25,13 +25,13 @@ namespace video_streaming_service.Streams
         [JsonIgnore]
         public string FileSystemInputManifestPath =>
             Path.Join(FileSystemInputPath, "manifest");
-        
+
         [JsonIgnore]
         public string FileSystemOutputPath { get; set; }
 
+        [JsonProperty("publicUri")]
         public string PublicUri => $"{StreamManager.STREAM_HOST}/{Id}/{StreamBuilder.MANIFEST_FILE_NAME}";
 
-        
         [JsonIgnore]
         public string FileSystemOutputManifestPath =>
             Path.Join(FileSystemOutputPath, StreamBuilder.MANIFEST_FILE_NAME);

@@ -35,7 +35,7 @@ namespace video_streaming_service.Controllers
             {
                 return Ok(manager.CreateStream(info.FileSystemInputPath));
             }
-            catch (FileNotFoundException e)
+            catch (FileNotFoundException)
             {
                 logger.Log(LogLevel.Error, $"Failed to create stream for path {info.FileSystemInputPath}. Manifest file is missing.");
                 return BadRequest(new {message = "Input path does not contain a manifest file."});

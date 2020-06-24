@@ -8,12 +8,9 @@ namespace video_streaming_service.Streams
 {
     public class StreamSegmentBuilder : IImageStreamSegmentBuilder
     {
-        public readonly IEnumerable<FileInfo> Frames;
+        public IEnumerable<FileInfo> Frames { get; set; }
 
         public readonly StreamInfo StreamInfo;
-
-        private string segmentNamePattern =>
-            $"{Path.GetFileNameWithoutExtension(StreamBuilder.MANIFEST_FILE_NAME)}%d.ts";
 
         public StreamSegmentBuilder(StreamInfo streamInfo, IEnumerable<FileInfo> frames)
         {
