@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Newtonsoft.Json;
+using video_streaming_service.Configuration;
 
 namespace video_streaming_service.Streams
 {
@@ -30,7 +31,7 @@ namespace video_streaming_service.Streams
         public string FileSystemOutputPath { get; set; }
 
         [JsonProperty("publicUri")]
-        public string PublicUri => $"{StreamManager.STREAM_HOST}/{Id}/{StreamBuilder.MANIFEST_FILE_NAME}";
+        public string PublicUri => $"{EnvironmentConfiguration.StaticServerHost}/{Id}/{StreamBuilder.MANIFEST_FILE_NAME}";
 
         [JsonIgnore]
         public string FileSystemOutputManifestPath =>

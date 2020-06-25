@@ -3,19 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using video_streaming_service.Configuration;
 
 namespace video_streaming_service.Streams
 {
     public class StreamBuilder : IDisposable
     {
-        /// <summary>
-        /// The duration in seconds of each stream segment.
-        /// </summary>
-        public const int SEGMENT_DURATION = 10;
-
         public const string MANIFEST_FILE_NAME = "output.m3u8";
-
-        public const string STREAMS_DIR = "/Users/naoey/Desktop/Poc_Streams";
 
         public string Id
         {
@@ -55,7 +49,7 @@ namespace video_streaming_service.Streams
         {
             manifest = new StreamSourceManifest(sourcePath);
 
-            string streamPath = Path.Join(STREAMS_DIR, manifest.Id);
+            string streamPath = Path.Join(EnvironmentConfiguration.VideoOutputRoot, manifest.Id);
 
             if (!File.Exists(streamPath) || !File.GetAttributes(streamPath).HasFlag(FileAttributes.Directory))
                 Directory.CreateDirectory(streamPath);
@@ -71,7 +65,7 @@ namespace video_streaming_service.Streams
             framesWatcher = new FileSystemWatcher
             {
                 Path = sourcePath,
-                NotifyFilter = NotifyFilters.CreationTime,
+                NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite,
                 Filter = "*.png",
                 EnableRaisingEvents = true,
             };
@@ -89,7 +83,7 @@ namespace video_streaming_service.Streams
                 return;
 
             isProcessingBatch = true;
-            
+
             try
             {
                 List<FileInfo> newestFileBatch = new DirectoryInfo(manifest.FileSystemInputPath)
@@ -99,7 +93,7 @@ namespace video_streaming_service.Streams
                     .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f.Name)))
                     .ToList();
 
-                if (newestFileBatch.Count >= manifest.Fps * SEGMENT_DURATION)
+                if (newestFileBatch.Count >= manifest.Fps * EnvironmentConfiguration.StreamSegmentDuration)
                 {
                     new StreamSegmentBuilder(manifest, newestFileBatch).Build();
                     lastFrameIndex = int.Parse(Path.GetFileNameWithoutExtension(newestFileBatch.Last().Name));

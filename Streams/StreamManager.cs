@@ -5,8 +5,6 @@ namespace video_streaming_service.Streams
 {
     public class StreamManager : IDisposable
     {
-        public const string STREAM_HOST = "http://localhost:13000";
-        
         public readonly List<StreamBuilder> Streams = new List<StreamBuilder>();
 
         /// <summary>
@@ -18,7 +16,7 @@ namespace video_streaming_service.Streams
         public StreamInfo CreateStream(string source)
         {
             StreamBuilder stream;
-            
+
             Streams.Add(stream = new StreamBuilder(source));
 
             return stream.StreamInfo;
@@ -35,7 +33,7 @@ namespace video_streaming_service.Streams
 
             if (stream == null)
                 return false;
-            
+
             stream.Dispose();
 
             Streams.Remove(stream);
@@ -47,12 +45,12 @@ namespace video_streaming_service.Streams
         {
             return CloseStream(Streams.Find(s => s.StreamInfo.Id == id)?.StreamInfo);
         }
-        
+
         public void Dispose()
         {
             foreach (var stream in Streams)
                 stream.Dispose();
-            
+
             Streams.Clear();
         }
     }

@@ -30,15 +30,21 @@ namespace video_streaming_service.Controllers
         public IActionResult CreateStream([FromBody] StreamInfo info)
         {
             logger.Log(LogLevel.Debug, $"Attempting to create new stream at path {info.FileSystemInputPath}.");
-            
+
             try
             {
                 return Ok(manager.CreateStream(info.FileSystemInputPath));
             }
             catch (FileNotFoundException)
             {
-                logger.Log(LogLevel.Error, $"Failed to create stream for path {info.FileSystemInputPath}. Manifest file is missing.");
+                logger.Log(LogLevel.Error,
+                    $"Failed to create stream for path {info.FileSystemInputPath}. Manifest file is missing.");
                 return BadRequest(new {message = "Input path does not contain a manifest file."});
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine(e);
+                return BadRequest(new {message = "Manifest is not readable."});
             }
         }
 
