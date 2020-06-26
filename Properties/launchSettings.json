@@ -18,7 +18,9 @@
       "commandName": "Project",
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "VAP_VIDEO_OUTPUT_ROOT": "C:\\Users\\naoey\\Desktop\\stream_outputs",
+        "VAP_STATIC_SERVER_HOST": "http://localhost:13000"
       }
     }
   }
