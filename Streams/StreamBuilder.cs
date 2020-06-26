@@ -62,6 +62,9 @@ namespace video_streaming_service.Streams
 
             manifestRefreshTimer = new Timer(refreshManifest, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
 
+            // Trigger so that existing frames at the start of this stream are picked up
+            onFilesChanged(null, null);
+
             framesWatcher = new FileSystemWatcher
             {
                 Path = sourcePath,
