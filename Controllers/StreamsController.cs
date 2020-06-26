@@ -4,19 +4,17 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using video_streaming_service.Streams;
 
 namespace video_streaming_service.Controllers
 {
     public class StreamsController : Controller
     {
-        private readonly ILogger<StreamsController> logger;
-
         private StreamManager manager;
 
-        public StreamsController(ILogger<StreamsController> logger, StreamManager manager)
+        public StreamsController(StreamManager manager)
         {
-            this.logger = logger;
             this.manager = manager;
         }
 
@@ -29,22 +27,19 @@ namespace video_streaming_service.Controllers
         [HttpPost("/Stream")]
         public IActionResult CreateStream([FromBody] StreamInfo info)
         {
-            logger.Log(LogLevel.Debug, $"Attempting to create new stream at path {info.FileSystemInputPath}.");
-
             try
             {
                 return Ok(manager.CreateStream(info.FileSystemInputPath));
             }
             catch (FileNotFoundException)
             {
-                logger.Log(LogLevel.Error,
-                    $"Failed to create stream for path {info.FileSystemInputPath}. Manifest file is missing.");
+                Log.Error("Failed to create stream for {@StreamInfo}. Manifest file is missing.");
                 return BadRequest(new {message = "Input path does not contain a manifest file."});
             }
             catch (IOException e)
             {
-                Console.WriteLine(e);
-                return BadRequest(new {message = "Manifest is not readable."});
+                Log.Error(e, "Failed to initialise new {@StreamInfo}.", info);
+                return BadRequest(new {message = "Manifest is not readable"});
             }
         }
 

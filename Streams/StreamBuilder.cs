@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Serilog;
 using video_streaming_service.Configuration;
 
 namespace video_streaming_service.Streams
@@ -63,14 +65,16 @@ namespace video_streaming_service.Streams
             manifestRefreshTimer = new Timer(refreshManifest, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
 
             // Trigger so that existing frames at the start of this stream are picked up
-            onFilesChanged(null, null);
+            Task.Run(() => onFilesChanged(null, null));
 
             framesWatcher = new FileSystemWatcher
             {
                 Path = sourcePath,
-                NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite,
+                NotifyFilter = NotifyFilters.CreationTime,
                 Filter = "*.png",
                 EnableRaisingEvents = true,
+                IncludeSubdirectories = false,
+                InternalBufferSize = 16384,
             };
 
             framesWatcher.Changed += onFilesChanged;
@@ -78,15 +82,10 @@ namespace video_streaming_service.Streams
             IsAlive = true;
         }
 
-        private bool isProcessingBatch = false;
+        private bool isProcessingBatch;
 
         private void onFilesChanged(object _, FileSystemEventArgs __)
         {
-            if (isProcessingBatch)
-                return;
-
-            isProcessingBatch = true;
-
             try
             {
                 List<FileInfo> newestFileBatch = new DirectoryInfo(manifest.FileSystemInputPath)
@@ -96,19 +95,27 @@ namespace video_streaming_service.Streams
                     .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f.Name)))
                     .ToList();
 
+                Log.Information(
+                    "Processing new frames batch for {@StreamInfo}. Last processed frame is {lastFrameIndex}. {newCount} frames in new batch.",
+                    StreamInfo.ToString(),
+                    lastFrameIndex,
+                    newestFileBatch.Count()
+                );
+
                 if (newestFileBatch.Count >= manifest.Fps * EnvironmentConfiguration.StreamSegmentDuration)
                 {
+                    isProcessingBatch = true;
                     new StreamSegmentBuilder(manifest, newestFileBatch).Build();
                     lastFrameIndex = int.Parse(Path.GetFileNameWithoutExtension(newestFileBatch.Last().Name));
+                    isProcessingBatch = false;
                 }
 
+                Log.Debug("Batch processing completed!");
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Log.Error(e, "Failed to create new segment for {@StreamInfo}", StreamInfo);
             }
-
-            isProcessingBatch = false;
         }
 
         private void refreshManifest(object _)
@@ -120,13 +127,14 @@ namespace video_streaming_service.Streams
 
         public void Dispose()
         {
+            Log.Debug("Finalising and closing stream {@StreamInfo}", StreamInfo);
+
             manifestRefreshTimer?.Dispose();
             framesWatcher?.Dispose();
 
             if (File.Exists(StreamInfo.FileSystemOutputManifestPath))
             {
-                var writer = File.AppendText(StreamInfo.FileSystemOutputManifestPath);
-                writer.WriteLine("#EXT-X-ENDLIST");
+                File.AppendAllText(StreamInfo.FileSystemOutputManifestPath, "\n#EXT-X-ENDLIST");
             }
         }
 
@@ -136,6 +144,7 @@ namespace video_streaming_service.Streams
             {
                 Id = Guid.NewGuid().ToString();
                 FileSystemInputPath = sourcePath;
+                StartTime = DateTimeOffset.Now;
 
                 Read();
             }
@@ -168,6 +177,10 @@ namespace video_streaming_service.Streams
 
                     case "IsAlive":
                         IsAlive = bool.Parse(value);
+                        break;
+
+                    case "SegmentLength":
+                        SegmentLength = int.Parse(value);
                         break;
                 }
             }

@@ -1,4 +1,5 @@
 using System;
+using Serilog;
 
 namespace video_streaming_service.Configuration
 {
@@ -17,6 +18,8 @@ namespace video_streaming_service.Configuration
 
             if (Environment.GetEnvironmentVariable("VAP_STREAM_SEGMENT_DURATION") != null)
                 StreamSegmentDuration = int.Parse(Environment.GetEnvironmentVariable("VAP_STREAM_SEGMENT_DURATION"));
+
+            Log.Debug("Initialised environment configuration");
         }
     }
 }

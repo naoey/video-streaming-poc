@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Serilog;
 
 namespace video_streaming_service.Streams
 {
@@ -32,21 +33,23 @@ namespace video_streaming_service.Streams
                 $"-sc_threshold 0 " +
                 $"-g 48 " +
                 $"-keyint_min 48 " +
-                $"-hls_time 4 " +
+                $"-hls_time {StreamInfo.SegmentLength} " +
                 $"-hls_list_size 0 " +
                 $"-hls_flags append_list+omit_endlist+round_durations " +
                 $"-b:v 240k " +
                 $"-maxrate 240k " +
                 $"-bufsize 480k " +
-                $"{StreamInfo.FileSystemOutputManifestPath}";
+                $"{StreamInfo.FileSystemOutputManifestPath} ";
 
-            Console.WriteLine($"Starting ffmpeg process with working directory {StreamInfo.FileSystemOutputPath}");
+            Log.Debug("Starting ffmpeg for {@StreamInfo} segment with arguments {ffmpegArgs}", StreamInfo, ffmpegArgs);
 
             var pInfo = new ProcessStartInfo("ffmpeg", ffmpegArgs)
             {
                 UseShellExecute = false,
                 RedirectStandardInput = true,
-                WorkingDirectory = StreamInfo.FileSystemOutputPath
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = StreamInfo.FileSystemOutputPath,
             };
 
             var proc = Process.Start(pInfo);
@@ -57,7 +60,7 @@ namespace video_streaming_service.Streams
 
             using (var stream = new BinaryWriter(proc.StandardInput.BaseStream))
             {
-                Console.WriteLine($"Opened writer to ffmpeg stdin; Writing {Frames.Count()} images.");
+                Log.Debug("Opened ffmpeg stream; writing {count} frames to stream.", Frames.Count());
 
                 foreach (var frame in Frames)
                 {
@@ -67,7 +70,7 @@ namespace video_streaming_service.Streams
 
             proc.WaitForExit();
 
-            Console.WriteLine("ffmpeg closed.");
+            Log.Debug("Completed building segment for {@StreamInfo}", StreamInfo);
         }
     }
 }

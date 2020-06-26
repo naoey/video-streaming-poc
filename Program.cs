@@ -13,14 +13,12 @@ namespace video_streaming_service
     {
         public static int Main(string[] args)
         {
-            const string logFormat = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message} (at {Caller}){NewLine}{Exception}";
-
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
-                .WriteTo.Console(outputTemplate: logFormat)
-                .WriteTo.File("logs\\log.txt", rollingInterval: RollingInterval.Day, outputTemplate: logFormat)
+                .WriteTo.Console()
+                .WriteTo.File("logs\\log.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
             EnvironmentConfiguration.Build();

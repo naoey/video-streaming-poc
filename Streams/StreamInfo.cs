@@ -13,6 +13,12 @@ namespace video_streaming_service.Streams
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("startTime")]
+        public DateTimeOffset StartTime { get; set; }
+
+        [JsonProperty("segmentLength")]
+        public int SegmentLength { get; set; }
+
         [JsonProperty("fps")]
         public int Fps { get; set; }
 
@@ -55,6 +61,11 @@ namespace video_streaming_service.Streams
         public override int GetHashCode()
         {
             return Id?.GetHashCode() ?? 0;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} [{Id}]";
         }
     }
 }
