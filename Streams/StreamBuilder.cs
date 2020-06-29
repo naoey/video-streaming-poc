@@ -11,7 +11,15 @@ namespace video_streaming_service.Streams
 {
     public class StreamBuilder : IDisposable
     {
+        /// <summary>
+        /// Playlist file name for outputted HLS video entry.
+        /// </summary>
         public const string MANIFEST_FILE_NAME = "output.m3u8";
+
+        /// <summary>
+        /// The frequency at which fames input directories are polled for new files
+        /// </summary>
+        public const int INPUT_POLL_DURATION = 2;
 
         public string Id
         {
@@ -43,7 +51,7 @@ namespace video_streaming_service.Streams
 
         private Timer manifestRefreshTimer;
 
-        private FileSystemWatcher framesWatcher;
+        private Timer inputFilesPoll;
 
         private int lastFrameIndex = -1;
 
@@ -63,29 +71,18 @@ namespace video_streaming_service.Streams
                     $"Attempted to initialise {nameof(StreamBuilder)} on a closed stream source.");
 
             manifestRefreshTimer = new Timer(refreshManifest, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
-
-            // Trigger so that existing frames at the start of this stream are picked up
-            Task.Run(() => onFilesChanged(null, null));
-
-            framesWatcher = new FileSystemWatcher
-            {
-                Path = sourcePath,
-                NotifyFilter = NotifyFilters.CreationTime,
-                Filter = "*.png",
-                EnableRaisingEvents = true,
-                IncludeSubdirectories = false,
-                InternalBufferSize = 16384,
-            };
-
-            framesWatcher.Changed += onFilesChanged;
+            inputFilesPoll = new Timer(checkFilesChanged, null, TimeSpan.Zero, TimeSpan.FromSeconds(2));
 
             IsAlive = true;
         }
 
-        private bool isProcessingBatch;
+        private object lockObject = new object();
 
-        private void onFilesChanged(object _, FileSystemEventArgs __)
+        private void checkFilesChanged(object _)
         {
+            if (!Monitor.TryEnter(lockObject))
+                return;
+
             try
             {
                 List<FileInfo> newestFileBatch = new DirectoryInfo(manifest.FileSystemInputPath)
@@ -104,10 +101,11 @@ namespace video_streaming_service.Streams
 
                 if (newestFileBatch.Count >= manifest.Fps * EnvironmentConfiguration.StreamSegmentDuration)
                 {
-                    isProcessingBatch = true;
+                    Log.Information("Minimum new frames available; creating new segment for {@StreamInfo}", StreamInfo);
+
                     new StreamSegmentBuilder(manifest, newestFileBatch).Build();
+
                     lastFrameIndex = int.Parse(Path.GetFileNameWithoutExtension(newestFileBatch.Last().Name));
-                    isProcessingBatch = false;
                 }
 
                 Log.Debug("Batch processing completed!");
@@ -115,6 +113,10 @@ namespace video_streaming_service.Streams
             catch (Exception e)
             {
                 Log.Error(e, "Failed to create new segment for {@StreamInfo}", StreamInfo);
+            }
+            finally
+            {
+                Monitor.Exit(lockObject);
             }
         }
 
@@ -130,7 +132,7 @@ namespace video_streaming_service.Streams
             Log.Debug("Finalising and closing stream {@StreamInfo}", StreamInfo);
 
             manifestRefreshTimer?.Dispose();
-            framesWatcher?.Dispose();
+            inputFilesPoll?.Dispose();
 
             if (File.Exists(StreamInfo.FileSystemOutputManifestPath))
             {
