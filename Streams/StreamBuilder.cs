@@ -93,8 +93,8 @@ namespace video_streaming_service.Streams
                     .ToList();
 
                 Log.Information(
-                    "Processing new frames batch for {@StreamInfo}. Last processed frame is {lastFrameIndex}. {newCount} frames in new batch.",
-                    StreamInfo.ToString(),
+                    "Processing new frames batch for {@StreamInfo}. Last processed frame is {lastFrameIndex}. {newCount} frames in new batch. Need {fps} * {segmentLength} frames.",
+                    StreamInfo,
                     lastFrameIndex,
                     newestFileBatch.Count()
                 );

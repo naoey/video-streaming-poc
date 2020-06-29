@@ -29,6 +29,9 @@ namespace video_streaming_service.Streams
         /// <returns>Returns true if the stream was successfully terminated, false if it was not found.</returns>
         public bool CloseStream(StreamInfo streamInfo)
         {
+            if (streamInfo == null)
+                return false;
+
             var stream = Streams.Find(s => streamInfo.Equals(s.StreamInfo));
 
             if (stream == null)
