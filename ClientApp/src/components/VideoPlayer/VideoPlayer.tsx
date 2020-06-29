@@ -14,6 +14,7 @@ export default function VideoPlayer() {
 
     const [selectedStream, setSelectedStream] = React.useState<null | StreamInfo>(null);
     const [streamsList, setStreamsList] = React.useState<StreamInfo[]>([]);
+    const [isReadyForPlayback, setReadyForPlayback] = React.useState(true);
 
     const loadStreamsList = async () => {
         try {
@@ -45,13 +46,16 @@ export default function VideoPlayer() {
             if (response.status === 200) {
                 // Stream is present and can be added as a source
                 player.current.src(stream.publicUri);
+                setReadyForPlayback(true);
                 await player.current.play();
             } else {
                 // Stream failed to load for whatever reason, set a delay to retry once more
+                setReadyForPlayback(false);
                 streamLoadRetryTimeout.current = setTimeout(() => loadStream(stream), 2500);
             }
         } catch (e) {
             console.error(e);
+            setReadyForPlayback(false);
         }
     }
 
@@ -97,6 +101,12 @@ export default function VideoPlayer() {
             <div className='current-stream-info'>
                 <h3>{selectedStream ? selectedStream.name : null}</h3>
             </div>
+
+            {
+                isReadyForPlayback
+                    ? null
+                    : <h3>Stream is being prepared...</h3>
+            }
 
             <div data-vjs-player>
                 <video
