@@ -22,10 +22,6 @@ The following variables are required for the app to function:
 - `VAP_STATIC_SERVER_HOST`: The host address of the web server serving the outputted video stream files publicly. Is prepended to `publicUri` fields of
 [`StreamInfo`](./Streams/StreamInfo.cs)s so that clients can access the playlists.
 
-The following variables are optional and will use defaut values if omitted:
-- `VAP_STREAM_SEGMENT_DURATION = 10`: The value passed through to ffmpeg as the HLS segment duration. The number of new images required to build
-a stream segment will be this value multiplied by the stream's `fps` value.
-
 These values can be set either in the current shell or in the [launchSettings.json](Properties/launchSettings.json) file under the `video_streaming_service` key.
 
 ### Setup
@@ -120,10 +116,10 @@ Once the input directory and manifest are created, the stream is ready to start 
 indicating their frame position in the video.
 
 Every new file added to the directory triggers an update. Images already existing in the directory are ignored until the directory gets updated with new images. Every update the app collects all files with index less than the index of the
-last processed image. If the count in this collection equals or exceeds `VAP_STREAM_SEGMENT_DURATION * Fps`, then these images are processed into a video segment and outputted. The last processed index is then set to the index of the last image
+last processed image. If the count in this collection equals or exceeds `SegmentDuration * Fps`, then these images are processed into a video segment and outputted. The last processed index is then set to the index of the last image
 in that collection.
 
-**tl;dr** input images should be named in their frame order as `0.png`, `1.png` and so on. If `VAP_STREAM_SEGMENT_DURATION = 10` and `Fps = 10`, then every 100 new images
+**tl;dr** input images should be named in their frame order as `0.png`, `1.png` and so on. If `SegmentDuration = 10` and `Fps = 10`, then every 100 new images
 a video segment is built and outputted.
 
 All images must be PNG and of the same size and pixel format.

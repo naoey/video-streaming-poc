@@ -99,7 +99,7 @@ namespace video_streaming_service.Streams
                     newestFileBatch.Count()
                 );
 
-                if (newestFileBatch.Count >= manifest.Fps * EnvironmentConfiguration.StreamSegmentDuration)
+                if (newestFileBatch.Count >= manifest.Fps * StreamInfo.SegmentLength)
                 {
                     Log.Information("Minimum new frames available; creating new segment for {@StreamInfo}", StreamInfo);
 

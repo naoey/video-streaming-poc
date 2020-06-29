@@ -17,7 +17,7 @@ namespace video_streaming_service.Streams
         public DateTimeOffset StartTime { get; set; }
 
         [JsonProperty("segmentLength")]
-        public int SegmentLength { get; set; }
+        public int SegmentLength { get; set; } = 10;
 
         [JsonProperty("fps")]
         public int Fps { get; set; }
