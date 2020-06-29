@@ -1,5 +1,7 @@
 using System;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -18,7 +20,7 @@ namespace video_streaming_service
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
-                .WriteTo.File("logs\\log.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "logs\\log.txt" : "logs/log.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
             EnvironmentConfiguration.Build();
