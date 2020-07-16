@@ -80,44 +80,42 @@ namespace video_streaming_service.Streams
 
         private void checkFilesChanged(object _, bool flushPendingFrames = false)
         {
-            if (!Monitor.TryEnter(lockObject))
-                return;
-
-            try
+            lock (lockObject)
             {
-                List<FileInfo> newestFileBatch = new DirectoryInfo(manifest.FileSystemInputPath)
-                    .GetFiles("*.png")
-                    .Where(f => f.Name != "manifest" &&
-                                int.Parse(Path.GetFileNameWithoutExtension(f.Name)) > lastFrameIndex)
-                    .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f.Name)))
-                    .ToList();
-
-                Log.Information(
-                    "Processing new frames batch for {@StreamInfo}. Last processed frame is {lastFrameIndex}. {newCount} frames in new batch. Need {fps} * {segmentLength} frames.",
-                    StreamInfo,
-                    lastFrameIndex,
-                    newestFileBatch.Count()
-                );
-
-                if (flushPendingFrames || newestFileBatch.Count >= manifest.Fps * StreamInfo.SegmentLength)
+                try
                 {
-                    Log.Information("Minimum new frames available; creating new segment for {@StreamInfo}", StreamInfo);
+                    List<FileInfo> newestFileBatch = new DirectoryInfo(manifest.FileSystemInputPath)
+                        .GetFiles("*.png")
+                        .Where(f => f.Name != "manifest" &&
+                                    int.Parse(Path.GetFileNameWithoutExtension(f.Name)) > lastFrameIndex)
+                        .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f.Name)))
+                        .ToList();
 
-                    new StreamSegmentBuilder(manifest, newestFileBatch).Build();
+                    Log.Information(
+                        "Processing new frames batch for {@StreamInfo}. Last processed frame is {lastFrameIndex}. {newCount} frames in new batch. Need {fps} * {segmentLength} frames.",
+                        StreamInfo,
+                        lastFrameIndex,
+                        newestFileBatch.Count(),
+                        StreamInfo.Fps,
+                        StreamInfo.SegmentLength
+                    );
 
-                    lastFrameIndex = int.Parse(Path.GetFileNameWithoutExtension(newestFileBatch.Last().Name));
+                    if (flushPendingFrames || newestFileBatch.Count >= manifest.Fps * StreamInfo.SegmentLength)
+                    {
+                        Log.Information("Minimum new frames available; creating new segment for {@StreamInfo}", StreamInfo);
 
-                    Log.Debug("Batch processing completed!");
+                        new StreamSegmentBuilder(manifest, newestFileBatch).Build();
+
+                        lastFrameIndex = int.Parse(Path.GetFileNameWithoutExtension(newestFileBatch.Last().Name));
+
+                        Log.Debug("Batch processing completed!");
+                    }
+
                 }
-
-            }
-            catch (Exception e)
-            {
-                Log.Error(e, "Failed to create new segment for {@StreamInfo}", StreamInfo);
-            }
-            finally
-            {
-                Monitor.Exit(lockObject);
+                catch (Exception e)
+                {
+                    Log.Error(e, "Failed to create new segment for {@StreamInfo}", StreamInfo);
+                }
             }
         }
 

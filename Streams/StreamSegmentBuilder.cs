@@ -47,8 +47,6 @@ namespace video_streaming_service.Streams
             {
                 UseShellExecute = false,
                 RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
                 WorkingDirectory = StreamInfo.FileSystemOutputPath,
             };
 
