@@ -71,14 +71,14 @@ namespace video_streaming_service.Streams
                     $"Attempted to initialise {nameof(StreamBuilder)} on a closed stream source.");
 
             manifestRefreshTimer = new Timer(refreshManifest, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
-            inputFilesPoll = new Timer(checkFilesChanged, null, TimeSpan.Zero, TimeSpan.FromSeconds(2));
+            inputFilesPoll = new Timer((object o) => checkFilesChanged(o), null, TimeSpan.Zero, TimeSpan.FromSeconds(2));
 
             IsAlive = true;
         }
 
         private object lockObject = new object();
 
-        private void checkFilesChanged(object _)
+        private void checkFilesChanged(object _, bool flushPendingFrames = false)
         {
             if (!Monitor.TryEnter(lockObject))
                 return;
@@ -99,16 +99,17 @@ namespace video_streaming_service.Streams
                     newestFileBatch.Count()
                 );
 
-                if (newestFileBatch.Count >= manifest.Fps * StreamInfo.SegmentLength)
+                if (flushPendingFrames || newestFileBatch.Count >= manifest.Fps * StreamInfo.SegmentLength)
                 {
                     Log.Information("Minimum new frames available; creating new segment for {@StreamInfo}", StreamInfo);
 
                     new StreamSegmentBuilder(manifest, newestFileBatch).Build();
 
                     lastFrameIndex = int.Parse(Path.GetFileNameWithoutExtension(newestFileBatch.Last().Name));
+
+                    Log.Debug("Batch processing completed!");
                 }
 
-                Log.Debug("Batch processing completed!");
             }
             catch (Exception e)
             {
@@ -129,6 +130,8 @@ namespace video_streaming_service.Streams
 
         public void Dispose()
         {
+            checkFilesChanged(null, flushPendingFrames: true);
+
             Log.Debug("Finalising and closing stream {@StreamInfo}", StreamInfo);
 
             manifestRefreshTimer?.Dispose();
