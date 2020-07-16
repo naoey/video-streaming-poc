@@ -40,6 +40,7 @@ export default function VideoPlayer() {
             if (!player.current)
                 player.current = videojs(videoNode.current, {
                     controls: true,
+                    liveui: true,
                     sources: [],
                 });
 
