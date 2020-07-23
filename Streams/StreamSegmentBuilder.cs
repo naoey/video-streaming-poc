@@ -36,9 +36,9 @@ namespace video_streaming_service.Streams
                 $"-hls_time {StreamInfo.SegmentLength} " +
                 $"-hls_list_size 0 " +
                 $"-hls_flags append_list+omit_endlist+round_durations " +
-                $"-b:v 240k " +
-                $"-maxrate 240k " +
-                $"-bufsize 480k " +
+                $"-b 800k " +
+                $"-maxrate 1100k " +
+                $"-bufsize 2200k " +
                 $"{StreamInfo.FileSystemOutputManifestPath} ";
 
             Log.Debug("Starting ffmpeg for {@StreamInfo} segment with arguments {ffmpegArgs}", StreamInfo, ffmpegArgs);
